@@ -1,42 +1,61 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import  prisma  from '@/lib/prisma'; // import your Prisma client
-import {  clerkClient } from '@clerk/nextjs/server'
+import { NextRequest, NextResponse } from 'next/server'; // Notice the import from 'next/server'
+import prisma from '@/lib/prisma'; // import your Prisma client
+import { clerkClient } from '@clerk/nextjs/server';
+import crypto from 'crypto';
 
+const verifyClerkWebhook = (req: NextRequest) => {
+  const signature = req.headers.get('clerk-signature');
+  const body = JSON.stringify(req.body);
+  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
 
+  if (!signature || !webhookSecret) {
+    return false;
+  }
 
+  const hmac = crypto.createHmac('sha256', webhookSecret);
+  hmac.update(body);
+  const computedSignature = hmac.digest('hex');
+
+  return computedSignature === signature;
+};
 
 const createUserInPrisma = async (clerkUserId: string) => {
-  // Fetch user data from Clerk using the Clerk SDK
   const clerkUser = await(await clerkClient()).users.getUser(clerkUserId);
 
-  // Create user in Prisma
   const user = await prisma.user.create({
     data: {
       clerkId: clerkUser.id,
-      email: clerkUser.emailAddresses[0]. emailAddress,
-      name:clerkUser.username!
+      email: clerkUser.emailAddresses[0].emailAddress,
+      name: clerkUser.username || 'No Name',
     },
   });
   return user;
 };
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method === 'POST') {
-    try {
-      const { clerkUserId } = req.body;
+// Use NextRequest instead of NextApiRequest for app directory
+export async function POST(req: NextRequest) {
+  try {
+    // Read JSON body from request
+    const body = await req.json();
 
-      // Create user in Prisma
-      const user = await createUserInPrisma(clerkUserId);
-      console.log("user created",user)
-
-      res.status(200).json({ user });
-    } catch (error) {
-        console.log(error)
-      res.status(500).json({ error: 'Error creating user in Prisma', });
+    // Verify the webhook signature
+    const isValid = verifyClerkWebhook(req);
+    if (!isValid) {
+      return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 400 });
     }
-  } else {
-    res.status(405).json({ error: 'Method not allowed' });
-  }
-};
 
-export default handler;
+    const { userId } = body; // Clerk webhook sends userId in the payload
+
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
+    // Create user in Prisma
+    const user = await createUserInPrisma(userId);
+
+    return NextResponse.json({ user });
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json({ error: 'Error creating user in Prisma' }, { status: 500 });
+  }
+}
