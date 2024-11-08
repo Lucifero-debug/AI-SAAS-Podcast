@@ -1,13 +1,11 @@
 import Latest from '@/components/Latest'
 import PodcastCard from '@/components/PodcastCard'
-import { currentUser } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import React from 'react'
 
 const page = async() => {
 
-  const user = await currentUser()
-  console.log("muche",user)
+  
   return (
     <div className='flex flex-col h-full w-full p-4 gap-10 '>
 <div className="trending flex flex-col gap-4 md:h-[46vh]">

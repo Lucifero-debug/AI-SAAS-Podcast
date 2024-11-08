@@ -1,21 +1,18 @@
 import prisma from "@/lib/prisma";
-import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-export async function POST() {
+export async function POST(req:Request) {
     try {
-        const user = await currentUser()
 
-       if(!user){
-        return;
-       }
+   const brown=await req.json()
+   console.log("dementia",brown.data.email_addresses)
+const user=brown.data
+    
 
-
-        // Create the user in Prisma
       const createdUser=  await prisma.user.create({
             data: {
                 clerkId: user.id,
-                email: user.emailAddresses[0].emailAddress,
+                email: user.email_addresses[0].email_address,
                 name: user.username || 'No Name',
             },
         });
@@ -26,4 +23,5 @@ export async function POST() {
         console.error('Error creating user:', error);
         return NextResponse.json({ message: 'Failed to create user' }, { status: 500 });
     }
-}
+}  
+
