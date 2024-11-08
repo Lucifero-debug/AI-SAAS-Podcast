@@ -25,7 +25,7 @@ const page = () => {
           formFieldLabel: "text-sm text-white font-semibold mb-1",
           formButtonPrimary: "bg-orange-600 text-white rounded-md py-2 px-4 custom-button",
         },
-      }}
+      }} path='/sign-up' routing='path'
 />
     </div>
   )
