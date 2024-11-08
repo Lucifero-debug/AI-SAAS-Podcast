@@ -4,6 +4,9 @@ import { clerkClient } from '@clerk/nextjs/server';
 import crypto from 'crypto';
 
 const verifyClerkWebhook = (req: NextRequest) => {
+  if (process.env.NODE_ENV === 'development') {
+    return true; // Skip verification in development
+  }
   const signature = req.headers.get('clerk-signature');
   const body = JSON.stringify(req.body);
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
