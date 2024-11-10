@@ -11,15 +11,15 @@ const Menu = () => {
 <h1 className='text-white font-extrabold text-xl'>Podcastr</h1>
 </div>
 <div className="tabs flex flex-col gap-5">
-<Link href='/' className='flex flex-row gap-3 bg-nav-focus'>
+<Link href='/' className='flex flex-row gap-3'>
 <Image src='/home.svg' alt='' width={20} height={20}/>
 <h1 className='text-white font-medium text-lg'>Home</h1>
 </Link>
-<Link href='/' className='flex flex-row gap-3'>
+<Link href='/discover' className='flex flex-row gap-3'>
 <Image src='/discover.svg' alt='' width={20} height={20}/>
 <h1 className='text-white font-medium text-lg'>Discover</h1>
 </Link>
-<Link href='/' className='flex flex-row gap-3'>
+<Link href='/create-podcast' className='flex flex-row gap-3'>
 <Image src='/microphone.svg' alt='' width={20} height={20}/>
 <h1 className='text-white font-medium text-lg'>Create Podcast</h1>
 </Link>
